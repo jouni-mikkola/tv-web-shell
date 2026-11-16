@@ -1,0 +1,47 @@
+name: build
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  UPSTREAM: NuvioMedia/NuvioTVSmart
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/configure-pages@v6.0.0
+      - name: Download latest upstream release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/dl"
+          gh release download -R "$UPSTREAM" -p 'NuvioTV-Tizen-*.wgt' -D "$RUNNER_TEMP/dl"
+          ls -l "$RUNNER_TEMP/dl"
+      - name: Verify zip and extract web files
+        run: python3 -I scripts/build.py "$(ls "$RUNNER_TEMP"/dl/*.wgt)" "$RUNNER_TEMP/site" LICENSE
+      - uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: ${{ runner.temp }}/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5.0.1
