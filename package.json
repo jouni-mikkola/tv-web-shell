@@ -1,0 +1,10 @@
+{
+  "packageType": "mods",
+  "appName": "Web Launcher",
+  "version": "1.0.0",
+  "websiteURL": "http://172.16.40.1:8080/probe.html",
+  "main": "main.js",
+  "keys": [],
+  "evaluateScriptOnDocumentStart": false,
+  "description": "Opens a page in the TV web browser from TizenBrew."
+}
